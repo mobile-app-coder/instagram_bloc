@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,7 +9,7 @@ import '../models/post_model.dart';
 
 Widget itemPost(BuildContext context, Post post) {
   return BlocProvider(
-    create: (context) => PostItemBloc(),
+    create: (_) => PostItemBloc(),
     child: Container(
       color: Colors.white,
       child: Column(
@@ -74,14 +75,19 @@ Widget itemPost(BuildContext context, Post post) {
           const SizedBox(
             height: 8,
           ),
-          CachedNetworkImage(
-            width: MediaQuery.of(context).size.width,
-            imageUrl: post.img_post,
-            placeholder: (context, url) => const Center(
-              child: CircularProgressIndicator(),
+          GestureDetector(
+            onDoubleTap: (){
+              context.read<PostItemBloc>().add(LikePostEvent(post));
+            },
+            child: CachedNetworkImage(
+              width: MediaQuery.of(context).size.width,
+              imageUrl: post.img_post,
+              placeholder: (context, url) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              errorWidget: (context, url, error) => Icon(Icons.error),
+              fit: BoxFit.cover,
             ),
-            errorWidget: (context, url, error) => Icon(Icons.error),
-            fit: BoxFit.cover,
           ),
 
           //like share
