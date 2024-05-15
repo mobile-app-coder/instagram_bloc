@@ -1,5 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram_bloc_cubit/bloc/feed/feed_bloc.dart';
@@ -9,6 +7,7 @@ import '../models/post_model.dart';
 import '../services/db_service.dart';
 import '../services/http_service.dart';
 import '../services/utils_service.dart';
+import '../views/feed_post_item.dart';
 
 class MyFeedPage extends StatefulWidget {
   final PageController? pageController;
@@ -33,22 +32,6 @@ class _MyFeedPageState extends State<MyFeedPage> {
       isLoading = false;
       post.liked = true;
     });
-  }
-
-  _resLoadFeeds(List<Post> posts) {
-    setState(() {
-      items = posts;
-      isLoading = false;
-    });
-  }
-
-  _apiLoadFeeds() {
-    setState(() {
-      isLoading = true;
-    });
-    DBService.loadFeeds().then((value) => {
-          _resLoadFeeds(value),
-        });
   }
 
   void _apiPostUnLike(Post post) async {
@@ -80,7 +63,7 @@ class _MyFeedPageState extends State<MyFeedPage> {
         isLoading = true;
       });
       DBService.removePost(post).then((value) => {
-            _apiLoadFeeds(),
+            /// _apiLoadFeeds(),
           });
     }
   }
@@ -121,136 +104,12 @@ class _MyFeedPageState extends State<MyFeedPage> {
               ListView.builder(
                   itemCount: bloc.items.length,
                   itemBuilder: (ctx, index) {
-                    return _itemPost(bloc.items[index]);
+                    return itemPost(context, bloc.items[index]);
                   })
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _itemPost(Post post) {
-    return Container(
-      color: Colors.white,
-      child: Column(
-        children: [
-          Divider(),
-          //user info
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-                        child: post.img_user.isEmpty
-                            ? const Image(
-                                image: AssetImage("assets/images/img.png"),
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.network(
-                                post.img_user,
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              )),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post.fullname,
-                          style: const TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(
-                          height: 3,
-                        ),
-                        Text(
-                          post.date,
-                          style: const TextStyle(fontWeight: FontWeight.normal),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-                post.mine
-                    ? IconButton(
-                        onPressed: () {
-                          _dialogRemovePost(post);
-                        },
-                        icon: Icon(Icons.more_horiz))
-                    : const SizedBox.shrink()
-              ],
-            ),
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          CachedNetworkImage(
-            width: MediaQuery.of(context).size.width,
-            imageUrl: post.img_post,
-            placeholder: (context, url) => const Center(
-              child: CircularProgressIndicator(),
-            ),
-            errorWidget: (context, url, error) => Icon(Icons.error),
-            fit: BoxFit.cover,
-          ),
-
-          //like share
-          Row(
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                      onPressed: () {
-                        if (!post.liked) {
-                          _apiPostLike(post);
-                        } else {
-                          _apiPostUnLike(post);
-                        }
-                      },
-                      icon: post.liked
-                          ? const Icon(
-                              EvaIcons.heart,
-                              color: Colors.red,
-                            )
-                          : const Icon(
-                              EvaIcons.heartOutline,
-                              color: Colors.black,
-                            )),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      EvaIcons.shareOutline,
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-
-          //caption
-          Container(
-            width: MediaQuery.of(context).size.width,
-            margin: EdgeInsets.only(left: 10, right: 10, bottom: 10),
-            child: RichText(
-              softWrap: true,
-              overflow: TextOverflow.visible,
-              text: TextSpan(
-                  text: "${post.caption}",
-                  style: TextStyle(color: Colors.black)),
-            ),
-          )
-        ],
-      ),
     );
   }
 }
