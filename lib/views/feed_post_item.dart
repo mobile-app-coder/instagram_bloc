@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,7 +8,7 @@ import '../models/post_model.dart';
 
 Widget itemPost(BuildContext context, Post post) {
   return BlocProvider(
-    create: (_) => PostItemBloc(),
+    create: (context) => PostItemBloc(),
     child: Container(
       color: Colors.white,
       child: Column(
@@ -76,7 +75,7 @@ Widget itemPost(BuildContext context, Post post) {
             height: 8,
           ),
           GestureDetector(
-            onDoubleTap: (){
+            onDoubleTap: () {
               context.read<PostItemBloc>().add(LikePostEvent(post));
             },
             child: CachedNetworkImage(

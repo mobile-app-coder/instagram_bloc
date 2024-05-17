@@ -1,8 +1,9 @@
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:instagram_bloc_cubit/bloc/upload/upload_bloc.dart';
 
 import '../models/post_model.dart';
 import '../services/db_service.dart';
@@ -22,6 +23,15 @@ class _UploadPageState extends State<UploadPage> {
   var captionController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
   File? _image;
+
+  late UploadBloc bloc;
+
+  @override
+  initState() {
+    super.initState();
+    bloc = BlocProvider.of<UploadBloc>(context);
+    bloc.pageController = widget.pageController;
+  }
 
   _moveToFeed() {
     setState(() {
@@ -55,27 +65,27 @@ class _UploadPageState extends State<UploadPage> {
         builder: (BuildContext context) {
           return SafeArea(
               child: Container(
-                child: Wrap(
-                  children: [
-                    ListTile(
-                      leading: Icon(Icons.photo_camera),
-                      title: Text("Pick Photo"),
-                      onTap: () {
-                        _imgFromCamera();
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.photo_library),
-                      title: Text("Pick Photo"),
-                      onTap: () {
-                        _imgFromGallery();
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.photo_camera),
+                  title: Text("Pick Photo"),
+                  onTap: () {
+                    // _imgFromCamera();
+                    Navigator.of(context).pop();
+                  },
                 ),
-              ));
+                ListTile(
+                  leading: Icon(Icons.photo_library),
+                  title: Text("Pick Photo"),
+                  onTap: () {
+                    _imgFromGallery();
+                    Navigator.of(context).pop();
+                  },
+                )
+              ],
+            ),
+          ));
         });
   }
 
@@ -91,7 +101,7 @@ class _UploadPageState extends State<UploadPage> {
       isLoading = true;
     });
     FileService.uploadPostImage(_image!).then(
-          (downloadUrl) => {
+      (downloadUrl) => {
         _resPostImage(downloadUrl),
       },
     );
@@ -108,7 +118,7 @@ class _UploadPageState extends State<UploadPage> {
     Post posted = await DBService.storePost(post);
     // Post to feeds
     DBService.storeFeed(posted).then(
-          (value) => {
+      (value) => {
         _moveToFeed(),
       },
     );
@@ -116,108 +126,114 @@ class _UploadPageState extends State<UploadPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          "Upload",
-          style: TextStyle(color: Colors.black),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _uploadNewPost();
-              });
-            },
-            icon: Icon(Icons.drive_folder_upload),
-            color: Color.fromRGBO(193, 53, 132, 1),
-          )
-        ],
-      ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              child: Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      _showPicker(context);
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      height: MediaQuery.of(context).size.width,
-                      color: Colors.grey.withOpacity(0.4),
-                      child: _image == null
-                          ? const Center(
-                        child: Icon(
-                          Icons.add_a_photo,
-                          size: 50,
-                          color: Colors.grey,
+    return BlocBuilder<UploadBloc, UploadState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            title: const Text(
+              "Upload",
+              style: TextStyle(color: Colors.black),
+            ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    //_uploadNewPost();
+                    bloc.uploadNewPost();
+                  });
+                },
+                icon: Icon(Icons.drive_folder_upload),
+                color: Color.fromRGBO(193, 53, 132, 1),
+              )
+            ],
+          ),
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                child: Container(
+                  height: MediaQuery.of(context).size.height,
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          _showPicker(context);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: MediaQuery.of(context).size.width,
+                          color: Colors.grey.withOpacity(0.4),
+                          child: _image == null
+                              ? const Center(
+                                  child: Icon(
+                                    Icons.add_a_photo,
+                                    size: 50,
+                                    color: Colors.grey,
+                                  ),
+                                )
+                              : Stack(
+                                  children: [
+                                    Image.file(
+                                      _image!,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    Container(
+                                      width: double.infinity,
+                                      color: Colors.black12,
+                                      padding: EdgeInsets.all(10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _image = null;
+                                                });
+                                              },
+                                              icon: const Icon(
+                                                Icons.highlight_remove,
+                                                color: Colors.white,
+                                              )),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(left: 10, right: 10, top: 10),
+                        child: TextField(
+                          controller: captionController,
+                          style: TextStyle(color: Colors.black),
+                          keyboardType: TextInputType.multiline,
+                          maxLines: 5,
+                          minLines: 1,
+                          decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Caption",
+                              hintStyle: TextStyle(
+                                  fontSize: 17, color: Colors.black38)),
                         ),
                       )
-                          : Stack(
-                        children: [
-                          Image.file(
-                            _image!,
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                          Container(
-                            width: double.infinity,
-                            color: Colors.black12,
-                            padding: EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _image = null;
-                                      });
-                                    },
-                                    icon: const Icon(
-                                      Icons.highlight_remove,
-                                      color: Colors.white,
-                                    )),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
+                    ],
                   ),
-                  Container(
-                    margin: EdgeInsets.only(left: 10, right: 10, top: 10),
-                    child: TextField(
-                      controller: captionController,
-                      style: TextStyle(color: Colors.black),
-                      keyboardType: TextInputType.multiline,
-                      maxLines: 5,
-                      minLines: 1,
-                      decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Caption",
-                          hintStyle:
-                          TextStyle(fontSize: 17, color: Colors.black38)),
-                    ),
-                  )
-                ],
+                ),
               ),
-            ),
+              isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : const SizedBox.shrink(),
+            ],
           ),
-          isLoading
-              ? const Center(
-            child: CircularProgressIndicator(),
-          )
-              : const SizedBox.shrink(),
-        ],
-      ),
+        );
+      },
     );
   }
 }

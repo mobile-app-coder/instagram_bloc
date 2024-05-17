@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/feed/feed_bloc.dart';
 import '../bloc/home/home_cubit.dart';
+import '../bloc/search/search_bloc.dart';
+import '../bloc/upload/upload_bloc.dart';
 import '../pages/feed_pages.dart';
 import '../pages/likes_page.dart';
 import '../pages/profile_page.dart';
@@ -23,9 +25,15 @@ Widget home_view(PageController pageController, HomeCubit cubit) {
           pageController: cubit.pageController,
         ),
       ),
-      SearchPage(),
-      UploadPage(
-        pageController: cubit.pageController,
+      BlocProvider(
+        create: (context) => SearchBloc(),
+        child: const SearchPage(),
+      ),
+      BlocProvider(
+        create: (context) => UploadBloc(),
+        child: UploadPage(
+          pageController: cubit.pageController,
+        ),
       ),
       LikesPage(),
       ProfilePage()
@@ -47,9 +55,15 @@ Widget viewOfHome(HomeCubit cubit) {
             pageController: cubit.pageController,
           ),
         ),
-        SearchPage(),
-        UploadPage(
-          pageController: cubit.pageController,
+        BlocProvider(
+          create: (context) => SearchBloc(),
+          child: const SearchPage(),
+        ),
+        BlocProvider(
+          create: (context) => UploadBloc(),
+          child: UploadPage(
+            pageController: cubit.pageController,
+          ),
         ),
         LikesPage(),
         ProfilePage()

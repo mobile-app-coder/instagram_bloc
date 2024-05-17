@@ -19,54 +19,14 @@ class MyFeedPage extends StatefulWidget {
 }
 
 class _MyFeedPageState extends State<MyFeedPage> {
-  bool isLoading = false;
-  List<Post> items = [];
+
   late FeedBloc bloc;
-
-  Future<void> _apiPostLike(Post post) async {
-    setState(() {
-      isLoading = true;
-    });
-    await DBService.likePost(post, true);
-    setState(() {
-      isLoading = false;
-      post.liked = true;
-    });
-  }
-
-  void _apiPostUnLike(Post post) async {
-    setState(() {
-      isLoading = true;
-    });
-
-    await DBService.likePost(post, false);
-    setState(() {
-      isLoading = false;
-      post.liked = false;
-    });
-
-    var owner = await DBService.getOwner(post.uid);
-    sendNotificationToFollowedMember(owner);
-  }
 
   void sendNotificationToFollowedMember(Member someone) async {
     Member me = await DBService.loadMember();
     await Network.POST(Network.API_SEND_NOTIF, Network.NotifyLike(me, someone));
   }
 
-  _dialogRemovePost(Post post) async {
-    var result = await Utils.dialogCommon(
-        context, "Instagram", "Do you want to detele this post?", false);
-
-    if (result) {
-      setState(() {
-        isLoading = true;
-      });
-      DBService.removePost(post).then((value) => {
-            /// _apiLoadFeeds(),
-          });
-    }
-  }
 
   @override
   void initState() {
