@@ -5,21 +5,11 @@ sealed class UploadEvent extends Equatable {
 }
 
 class UploadPostEvent extends UploadEvent {
-  @override
-  List<Object?> get props => [];
-}
+  final String caption;
+  final File image;
 
-class UploadGalleryEvent extends UploadEvent {
-  @override
-  List<Object?> get props => [];
-}
+  const UploadPostEvent({required this.caption, required this.image});
 
-class UploadCameraEvent extends UploadEvent {
   @override
-  List<Object?> get props => [];
-}
-
-class RemoveImageEvent extends UploadEvent{
-  @override
-  List<Object?> get props => [];
+  List<Object> get props => [];
 }
